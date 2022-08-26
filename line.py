@@ -5,9 +5,9 @@ if TYPE_CHECKING:
     from node import Node
 
 class Line:
-    def __init__(self,input: dict):
-        self.label=input["label"]
-        self.length=input["length"]
+    def __init__(self,label, length):
+        self.label=label
+        self.length=length
         self.successive={}
 
     def length(self):
@@ -29,5 +29,8 @@ class Line:
         sig.addlatency(self.latency_generation())
         noise_power=self.noise_generation(sig.signal_power)
         sig.addnoisepower(noise_power)
+        next =self.successive[sig.path[0]]
+
+        return next.propagate(sig)
 
 
