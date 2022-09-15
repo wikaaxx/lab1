@@ -12,18 +12,7 @@ class Network:
     def __init__(self, path):
         self.nodes={}
         self.lines={}
-        file=open(path)
-        data=json.load(file)
-        file.close()
-
-        for label,value in data:
-            temp={ "label":label,"position":(value["position"][0],value["position"][1]),"connected_nodes":value["connected_nodes"]}
-            self.nodes[label] = Node(temp)
-        for node in self.nodes.values():
-            for connected in node.connected_nodes:
-                label=node.label +connected
-                length= sqrt((node.position[0] - self.nodes[connected].position[0])**2 + (node.position[1] - self.nodes[connected].position)**2)
-                self.lines[label]=Line(label,length)
+        node_json=json.load()
 
 
 
