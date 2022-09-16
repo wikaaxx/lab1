@@ -21,12 +21,17 @@ class Signal_information:
 
     def getnoise(self):
         return self.noise_power
+    def latency(self):
+        return self.latency
 
     def addlatency(self, latency):
         self.latency += latency
 
     def path_update(self):
         self.path = self.path.pop(0)
+
+    def next(self):
+        self.path = self.path[1:]
 
 
 

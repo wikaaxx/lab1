@@ -6,13 +6,30 @@ from cmath import sqrt
 import random
 from pandas import DataFrame
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 class Network:
     def __init__(self, path):
         self.nodes={}
         self.lines={}
-        node_json=json.load()
+        node_json=json.load(open(path,'r'))
+        for node_l in node_json:
+            node_dict=node_json[node_l]
+            node_dict['label'] = node_l
+            node = Node(node_dict)
+            self.nodes[node_l] = node
+
+            for connected_l in node_dict['connected_nodes']:
+                line_dict={}
+                line_l= node_l + connected_l
+                line_dict['label'] = line_l
+                node_pos= np.array(node_json[node_l]['position'])
+                connected_pos=np.array(node_json[connected_l]['position'])
+                line_dict['length']=np.sqrt(np.sum((node_pos - connected_pos)**2))
+                line = Line(line_dict)
+                self.lines[line_l] = line
+
 
 
 
@@ -46,8 +63,10 @@ class Network:
         return paths
 
     def propagate(self,sig:Signal_information):
-        node = self.nodes[sig.path[0]]
-        return self.nodes[node].propagate(sig)
+        path = sig.path
+        start=self.nodes[path[0]]
+        propagated = start.propagate(sig)
+        return propagated
 
     def draw(self):
         nodes =self.nodes

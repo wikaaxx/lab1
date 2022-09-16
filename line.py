@@ -5,9 +5,9 @@ if TYPE_CHECKING:
     from node import Node
 
 class Line:
-    def __init__(self,label, length):
-        self.label=label
-        self.length=length
+    def __init__(self,dict):
+        self.label=dict['label']
+        self.length=dict['length']
         self.successive={}
 
     def length(self):
