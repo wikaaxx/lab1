@@ -4,33 +4,39 @@ from sig import Signal_information
 if TYPE_CHECKING:
     from node import Node
 
-class Line:
-    def __init__(self,dict):
-        self.label=dict['label']
-        self.length=dict['length']
+class Line(object):
+    def __init__(self,line_dict):
+        self.label=line_dict['label']
+        self.length=line_dict['length']
         self.successive={}
 
     def length(self):
-        return self.length()
+        return self.length
     def label(self):
-        return self.label()
+        return self.label
+    def successive(self):
+        return self.successive
 
     def successive(self, successive):
         self.successive = successive
 
     def latency_generation(self):
         v = float((2/3)*3*10**8)
-        return self.length/v
+        latency = self.length/v
+        return latency
 
-    def noise_generation(self, sig_power :float):
-        return 1e-9*sig_power*self.length
+    def noise_generation(self, sig_power):
+        noise=sig_power / (2*self.length)
+        return noise
 
-    def propagate(self,sig: Signal_information):
-        sig.addlatency(self.latency_generation())
-        noise_power=self.noise_generation(sig.signal_power)
-        sig.addnoisepower(noise_power)
-        next =self.successive[sig.path[0]]
-
-        return next.propagate(sig)
+    def propagate(self,signal_information):
+        latency = self.latency_generation()
+        signal_information.addlatency(latency)
+        signal_power= signal_information.signal_power
+        noise=self.noise_generation(signal_power)
+        signal_information.addnoisepower(noise)
+        node = self.successive[signal_information.path[0]]
+        signal_information = node.propagate(signal_information)
+        return signal_information
 
 

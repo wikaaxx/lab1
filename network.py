@@ -7,13 +7,15 @@ import random
 from pandas import DataFrame
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
+import math
 
 
-class Network:
+class Network(object):
     def __init__(self, path):
         self.nodes={}
         self.lines={}
-        node_json=json.load(open(path,'r'))
+        node_json=json.load(open(path, 'r'))
         for node_l in node_json:
             node_dict=node_json[node_l]
             node_dict['label'] = node_l
@@ -30,26 +32,28 @@ class Network:
                 line = Line(line_dict)
                 self.lines[line_l] = line
 
-
-
-
-    def get_nodes(self):
+    def nodes(self):
         return self.nodes
-    def get_lines(self):
+
+    def lines(self):
         return self.lines
+
     def connect(self):
         nodes_dictionary=self.nodes
         lines_dictionary=self.lines
-        for x in nodes_dictionary.values():
-            for connected in x.connected_nodes:
-                line = lines_dictionary[x.label+connected]
-                line.successive[connected]=nodes_dictionary[connected]
-                x.successive[x.label+connected]=lines_dictionary[x.label+connected]
+        for node_l in nodes_dictionary:
+            node=nodes_dictionary[node_l]
+            for connected_n in node.connected_nodes:
+                line_l=node_l+connected_n
+                line=lines_dictionary[line_l]
+                line.successive[connected_n]=nodes_dictionary[connected_n]
+                node.successive[line_l]=lines_dictionary[line_l]
 
     def find_paths(self,label1,label2):
         cross_nodes = [key for key in self.nodes.keys() if((key!=label1)&(key!=label2))]
         cross_lines=self.lines.keys()
-        inner_paths={'0':label1}
+        inner_paths={}
+        inner_paths['0'] = label1
         for i in range(len(cross_nodes)+1):
             inner_paths[str(i+1)]=[]
             for inner_path in inner_paths[str(i)]:
@@ -62,10 +66,10 @@ class Network:
                     paths.append(path+label2)
         return paths
 
-    def propagate(self,sig:Signal_information):
-        path = sig.path
+    def propagate(self,signal_information):
+        path = signal_information.path
         start=self.nodes[path[0]]
-        propagated = start.propagate(sig)
+        propagated = start.propagate(signal_information)
         return propagated
 
     def draw(self):
@@ -74,13 +78,16 @@ class Network:
             n0=nodes[node_label]
             x0=n0.position[0]
             y0=n0.position[1]
-            plt.text(x0,y0,node_label)
+            plt.plot(x0,y0,'go',markersize=10)
+            plt.text(x0+20,y0+20,node_label)
             for connected in n0.connected_nodes:
                 n1=nodes[connected]
                 x1=n1.position[0]
                 y1=n1.position[1]
-                plt.plot([x0,x1],[y0,y1])
+                plt.plot([x0,x1],[y0,y1],'b')
         plt.xlabel('km')
         plt.ylabel('network')
         plt.show()
+
+
 

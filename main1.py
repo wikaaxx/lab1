@@ -2,6 +2,8 @@ import pandas as pd
 from sig import Signal_information
 from network import Network
 import math
+import json
+
 
 network = Network('nodes.json')
 network.connect()
@@ -25,11 +27,11 @@ for p in pairs:
             path_str+=node+'->'
         paths.append(path_str[:-2])
 
-        signal_info = Signal_information(1, path)
-        signal_info = network.propagate(signal_info)
-        latencies.append(signal_info.latency)
-        noises.append(signal_info.noise_power)
-        snrs.append(10*math.log(signal_info.signal_power/signal_info.noise_power,10))
+        sig = Signal_information(1, path)
+        sig= network.propagate(sig)
+        latencies.append(sig.latency)
+        noises.append(sig.noise_power)
+        snrs.append(10*math.log(sig.signal_power/sig.noise_power,10))
 
 df['path'] = paths
 df['latency'] = latencies
