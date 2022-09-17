@@ -1,43 +1,37 @@
-class Signal_information(object):
+from cmath import log10
 
-    def __init__(self, signal_power, path):
+class Signal_information:
+
+    def __init__(self, signal_power: float, path: list[str]):
         self.signal_power = signal_power
-        self.path = path
-        self.latency = 0
-        self.noise_power = 0
+        self.noise_power = 0.0
+        self.latency = 0.0
+        self.path = list(path)
 
-    def addsigpower(self, power):
+    def inc_sig_pow(self, power: float):
         self.signal_power += power
 
-    def addnoisepower(self, noise):
-        self.noise_power += noise
+    def inc_noise_pow(self, power: float):
+        self.noise_power += power
 
-    def getpower(self):
-        return self.signal_power
-
-    def getnoise(self):
-        return self.noise_power
-
-    def latency(self):
-        return self.latency
-
-    def addlatency(self, latency):
+    def inc_latency(self, latency: float):
         self.latency += latency
 
-    def next(self):
-        self.path = self.path[1:]
+    def update_path(self) -> str:
+        if(len(self.path) > 1):
+            t = self.path.pop(0)
+        else:
+            t=self.path[0]
+        return t
 
-    def latency(self, latency):
-        self.latency = latency
-
-    def power(self):
+    def get_signal_pow(self) -> float:
         return self.signal_power
 
-    def noise_power(self):
-        return self.noise_power
+    def get_signal_noise_ration(self) ->float :
+        return 10 * (log10(self.signal_power.real) - log10(self.noise_power.real))
 
-    def path(self, path):
-        self.path = path
+    def get_latency(self) -> float:
+        return self.latency
 
-    def path(self):
-        return self.path
+    def __str__(self) -> str:
+        return (str(self.get_signal_noise_ration()) + " - " + str(self.get_latency()))
