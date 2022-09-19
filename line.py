@@ -1,13 +1,9 @@
 from math import floor
-from typing import TYPE_CHECKING
 from sig import Signal_information
 import numpy as np
 from scipy import constants as cs
 import constants as my_cs
-from scipy import optimize as scop
 
-if TYPE_CHECKING:
-    from node import Node
 
 
 class Line:
@@ -15,8 +11,8 @@ class Line:
     noise_figure = 3  # dB
     # noise_figure = 5 # alternative value
     alpha = 0.2e-3  # / (10*np.log10(cs.e)) #dB/m this a 10 or a 20? To ask later
-    module_beta = 2.13e-26  # 1/(m * Hz^2)
-    # module_beta = 0.6e-26 # alternative value
+    #module_beta = 2.13e-26  # 1/(m * Hz^2)
+    module_beta = 0.6e-26 # alternative value
     gamma = 1.27e-3  # 1/(m*W)
     Rs = 32e9  # Hz
     df = 50e9  # Hz
