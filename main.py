@@ -1,4 +1,5 @@
 from math import floor
+
 from network import *
 
 network = Network("274328.json", 10)
@@ -13,7 +14,6 @@ for i in range(1, 80):
     cons.append(Connection(nodes[s], nodes[e], 1e-3))
 network.stream(cons)
 
-
 db_a = []
 speed_fixed_a = []
 speed_flex_a = []
@@ -25,7 +25,7 @@ for k in range(-20, 40):
     speed_flex_a.append(network.calculate_bit_rate_actual(snr, "flex-rate") / 1e9)
     speed_shannon_a.append(network.calculate_bit_rate_actual(snr, "shannon") / 1e9)
 
-#speed curves
+# speed curves
 plt.plot(db_a, speed_fixed_a)
 plt.xlabel("GSNR [dB]")
 plt.ylabel("Fixed Speed [Gb/s]")
@@ -40,7 +40,6 @@ plt.plot(db_a, speed_shannon_a)
 plt.xlabel("GSNR [dB]")
 plt.ylabel("Shannon Speed [Gb/s]")
 plt.show()
-
 
 fixedRateNet = Network("274328.json", 10, "fixed-rate")
 flexRateNet = Network("274328.json", 10, "flex-rate")
@@ -110,15 +109,15 @@ print("Avg latency shannon: " + str(average([con.latency for con in shannonCons]
 
 transceivers = ["fixed-rate", "flex-rate", "shannon"]
 
-snr_histories = {"fixed-rate": [], "flex-rate": [], "shannon": []}
-snr_histories_after_recovery = {"fixed-rate": [], "flex-rate": [], "shannon": []}
+snr = {"fixed-rate": [], "flex-rate": [], "shannon": []}
+
 
 for transceiver in transceivers:
-    allocated_capacity_history = []
+    allocated_capacity = []
     tot_cap = 0
     for m in range(1, 80):
         # traffic matrix
-        net = Network("274328.json", 10, transceiver)  # resetting the network
+        net = Network("274328.json", 10, transceiver)
 
         traffic_m = np.random.randn(len(net.nodes) ** 2) * 100e9 * m
         traffic_m = np.full(len(net.nodes) ** 2, 100e9 * m)
@@ -136,19 +135,17 @@ for transceiver in transceivers:
             elif count_false(line.state) > count_false(best.state):
                 best = line
 
-        allocated_capacity_history.append(net.total_allocated_capacity())
-        snr_histories[transceiver].append(net.average_snr())
+        allocated_capacity.append(net.total_allocated_capacity())
+        snr[transceiver].append(net.average_snr())
 
         tot_cap += net.total_allocated_capacity()
 
-
-
-    plt.plot(allocated_capacity_history)
+    plt.plot(allocated_capacity)
     plt.title(transceiver + " total allocated capacity")
     plt.show()
     print("total allocated capacity of " + transceiver + "is: " + str(tot_cap))
-    tot_cap=0
+    tot_cap = 0
 
-    plt.plot(snr_histories[transceiver])
+    plt.plot(snr[transceiver])
     plt.title(transceiver + "average snr")
     plt.show()
