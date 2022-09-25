@@ -44,9 +44,9 @@ plt.show()
 plt.hist(list(map(lambda x: x.bitRate, cons)), bins=2)
 plt.show()
 
-fixedRateNet = Network("274328.json", 10, "fixed-rate")  # Network("nodes_full_fixed_rate.json")
-flexRateNet = Network("274328.json", 10, "flex-rate")  # Network("nodes_full_flex_rate.json")
-shannonNet = Network("274328.json", 10, "shannon")  # Network("nodes_full_shannon.json")
+fixedRateNet = Network("274328.json", 10, "fixed-rate")
+flexRateNet = Network("274328.json", 10, "flex-rate")
+shannonNet = Network("274328.json", 10, "shannon")
 
 nodes = list(fixedRateNet.nodes.keys())
 fixedCons = []
@@ -101,9 +101,9 @@ flexCons = [con for con in flexCons if con.bitRate > 0]
 shannonCons = [con for con in shannonCons if con.bitRate > 0]
 
     # print average speeds
-print("Average speed for fixed transceivers is: " + str(calculate_average([con.bitRate for con in fixedCons])))
-print("Average speed for flex transceivers is: " + str(calculate_average([con.bitRate for con in flexCons])))
-print("Average speed for shannon transceivers is: " + str(calculate_average([con.bitRate for con in shannonCons])))
+print("Average speed for fixed transceivers is: " + str(average([con.bitRate for con in fixedCons])))
+print("Average speed for flex transceivers is: " + str(average([con.bitRate for con in flexCons])))
+print("Average speed for shannon transceivers is: " + str(average([con.bitRate for con in shannonCons])))
 
 print("Average snr for fixed transceivers is: " + str(calculate_average([con.snr for con in fixedCons])))
 print("Average snr for flex transceivers is: " + str(calculate_average([con.snr for con in flexCons])))

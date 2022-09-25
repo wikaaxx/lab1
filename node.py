@@ -29,15 +29,15 @@ class Node:
     def transceiver(self):
         return self.transceiver
 
-    def addline(self, line, dest: str):
+    def addline(self, line, dest):
         self.successive[dest] = line
 
     def propagate(self, signal: Signal_information):
         next = signal.update_path()
-        if (next in self.connected_node):
+        if next in self.connected_node:
             l = np.abs(20 * np.log10(cs.e) / self.successive[next].alpha)
             signal.signal_power = (self.successive[next].length * self.successive[next].noise_figure * (cs.h * my_cs.BN * self.successive[next].f) / (
-                    2 * my_cs.BN * self.successive[next].calculate_NLI_coeff())) ** (1 / 3) #optimal launch power computation for line
+                    2 * my_cs.BN * self.successive[next].calculate_nli())) ** (1 / 3) #optimal launch power computation for line
             self.successive[next].propagate(signal)
 
 

@@ -113,9 +113,9 @@ class Network:
         best_channel = -1
         for path in self.find_paths(begin, end):
             sig = self.propagate(Signal_information(1e-3, path))
-            if ((sig.get_signal_noise_ration().real > best_snr.real or best_snr == -1) and self.recursive_check_path(
+            if ((sig.get_snr().real > best_snr.real or best_snr == -1) and self.recursive_check_path(
                     path, 0)):
-                best_snr = sig.get_signal_noise_ration()
+                best_snr = sig.get_snr()
                 if (len(best) != 0):
                     for i in range(0, len(best) - 1):
                         self.lines[best[i] + best[i + 1]].free(best_channel)
@@ -144,12 +144,10 @@ class Network:
         for con in cons:
             if (to_use):  # depending on the best path selected I use the appropriate function
                 path = self.find_best_latency(con.input, con.output)
-                con.setChannel(
-                    self.last_channel)  # set the channel of the connection to the last one check for inside the function
+                con.setChannel(self.last_channel)  # set the channel of the connection to the last one check for inside the function
             else:
                 path = self.find_best_snr(con.input, con.output)
-                con.setChannel(
-                    self.last_channel)  # set the channel of the connection to the last one check for inside the function
+                con.setChannel(self.last_channel)  # set the channel of the connection to the last one check for inside the function
 
             if (len(path) != 0):  # if a path was found
                 con.setBitRate(self.calculate_bit_rate(Lightpath(con.signal_power, path, con.channel), self.nodes[
@@ -157,7 +155,7 @@ class Network:
                 if (con.bitRate > 0):  # if the GSNR requirements are met
                     sig = self.propagate(Signal_information(con.signal_power, path))
                     con.setLatency(sig.latency.real)
-                    con.setSNR(sig.get_signal_noise_ration().real)
+                    con.setSNR(sig.get_snr().real)
                     con.setPath(path)
 
                     self.update_route_space(con)  # update route space
@@ -214,7 +212,7 @@ class Network:
                         sig = self.propagate(Signal_information(1e-3, path))
                         labels_d.append(self.path_to_string(path))
                         data.append([self.path_to_string(path), sig.noise_power.real, sig.latency.real,
-                                     sig.get_signal_noise_ration().real])
+                                     sig.get_snr().real])
         self.weighted_paths = DataFrame(data, columns=['label', 'noise', 'latency', 'snr'], index=labels_d)
         data = []
         for label in labels_d:
@@ -228,8 +226,7 @@ class Network:
         snr = 10 ** (self.weighted_paths.loc[self.path_to_string(lightPath.path), 'snr'] / 10.0)
         return self.calculate_bit_rate_actual(snr, strategy, lightPath.Rs)
 
-    def calculate_bit_rate_actual(self, snr, strategy,
-                                  rs=my_cs.RS):  # depending on the stratefy calculates the speed depending on the snr
+    def calculate_bit_rate_actual(self, snr, strategy,rs=32e9):  # based on the snr
         if (strategy == 'fixed-rate'):
             if (snr >= 2 * sp.erfcinv(2 * my_cs.BERT) ** 2 * rs / my_cs.BN):
                 return 100e9
@@ -286,7 +283,7 @@ class Network:
                 return
 
     def strong_failure(self, line: str) -> None:
-        self.lines[line].beBrocken()
+        self.lines[line].break_service()
 
     def traffic_recovery(self) -> None:
         Tm = np.zeros((len(self.nodes), len(self.nodes)))
@@ -352,13 +349,13 @@ class Network:
         total = 0.0
         for t in range(self.time):
             row = self.logger.loc[self.logger["epoch time"] == t]
-            if (len(row) == 0):
+            if len(row) == 0:
                 continue
             total += self.weighted_paths.loc[row["path"].iloc[0], "latency"]
         return total / len(self.logger)
 
 
-def calculate_average(elems: list) -> float:
+def average(elems: list):
     result = 0.0
     for elem in elems:
         result += elem
