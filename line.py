@@ -2,17 +2,16 @@ from math import floor
 from sig import Signal_information
 import numpy as np
 from scipy.constants import c, h, pi, e
-import constants as my_cs
 
 
 class Line:
-    gain = 16  # dB
-    noise_figure = 3  # dB
-    # noise_figure = 5 # for the third simulation
-    alpha = 0.2e-3 / (10 * np.log10(e))  # dB/m
+    gain = 16  # dB!!!
+    #noise_figure = 3  # dB!!!!!!
+    noise_figure = 5 # for the third simulation
+    alpha = 0.2e-3  # dB/m
     module_beta = 2.13e-26  # 1/(m * Hz^2)
     # module_beta = 0.6e-26 # for the second simulation
-    gamma = 1.27e-3  # 1/(m*W)
+    gamma = 1.27e-3  # (m*W)^-1
     Rs = 32e9  # Hz
     df = 50e9  # Hz
     f = 193.414e12
@@ -58,7 +57,7 @@ class Line:
 
     def getFreeChannel(self):  # return first available channel or -1 if there none, and will call occupy on it
         i = 0
-        while i < len(self.state) and not self.occupy(i):
+        while i < len(self.state) and not self.state[i]:
             i += 1
         if i == len(self.state):
             return -1
@@ -70,7 +69,7 @@ class Line:
 
     def nli_generation(self, signal_power):
         return signal_power ** 3 * self.calculate_nli() * 12.5e9 * 10 ** (-self.alpha * self.length / 10) * 10 ** (
-                    self.gain / 10)
+                self.gain / 10)
 
     def optimized_launch_power(self):  # slide 31 of OLS(8)
         l = np.abs(20 * np.log10(e) / self.alpha)
@@ -78,10 +77,16 @@ class Line:
                 2 * 12.5e9 * self.calculate_nli())) ** (1 / 3)
 
     def calculate_nli(self):
+
         if self.NLI == -1:  # if not yet done
-            self.NLI = 16 / (27 * pi) * self.gamma ** 2 / (4 * self.alpha * self.module_beta * self.Rs ** 3) * np.log(
-                pi ** 2 * self.module_beta * self.Rs ** 2 * len(self.state) ** (2 * self.Rs / self.df) / (2 * self.alpha))
+            alpha = np.abs(self.alpha / (10 * np.log10(e)))
+            log_arg = pi ** 2 * self.module_beta * self.Rs ** 2 * len(self.state) ** (2 * self.Rs / self.df) / (
+                    2 * alpha)  # argument of log
+            factor = 16 / (27 * pi) * self.gamma ** 2 / (
+                    4 * alpha * self.module_beta * self.Rs ** 3)  # the other factor
+            self.NLI = factor * np.log(log_arg)
+
         return self.NLI
 
-    def break_service(self):
-        self.in_service = False
+    def set_in_service(self,service):
+        self.in_service = service

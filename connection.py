@@ -1,6 +1,6 @@
 class Connection:
 
-    def __init__(self, input: str, output: str, signal_power: float) -> None:
+    def __init__(self, input: str, output: str, signal_power: float):
         self.input = input
         self.output = output
         self.signal_power = signal_power
@@ -11,22 +11,22 @@ class Connection:
         self.allocated = 0.0
         self.path = []
 
-    def setLatency(self, latency: float) -> None:
+    def set_latency(self, latency: float):
         self.latency = latency
 
-    def setSNR(self, snr: float) -> None:
+    def set_snr(self, snr: float):
         self.snr = snr
 
-    def setChannel(self, channel: int) -> None:
+    def set_channel(self, channel: int):
         self.channel = channel
 
-    def setBitRate(self, bitRate) -> None:
+    def set_bit_rate(self, bitRate):
         self.bitRate = bitRate
 
-    def setPath(self, path) -> None:
+    def set_path(self, path):
         self.path = path
 
-    def allocate(self, bitRate) -> None:
-        if (self.allocated + bitRate <= self.bitRate):
+    def allocate(self, bitRate):
+        if self.allocated + bitRate <= self.bitRate:
             self.allocated += bitRate
 

@@ -29,7 +29,7 @@ class Signal_information:
         return self.signal_power
 
     def get_snr(self):
-        return 10 * (log10(self.signal_power.real) - log10(self.noise_power.real))
+        return 10 * (log10(self.signal_power.real/self.noise_power.real))
 
     def get_latency(self):
         return self.latency

@@ -1,10 +1,5 @@
 from sig import Signal_information
-from math import floor
-from typing import TYPE_CHECKING
-from sig import Signal_information
-import numpy as np
-from scipy import constants as cs
-import constants as my_cs
+from scipy.constants import c, h, pi, e
 
 class Node:
 
@@ -34,10 +29,9 @@ class Node:
 
     def propagate(self, signal: Signal_information):
         next = signal.update_path()
-        if next in self.connected_node:
-            l = np.abs(20 * np.log10(cs.e) / self.successive[next].alpha)
-            signal.signal_power = (self.successive[next].length * self.successive[next].noise_figure * (cs.h * my_cs.BN * self.successive[next].f) / (
-                    2 * my_cs.BN * self.successive[next].calculate_nli())) ** (1 / 3) #optimal launch power computation for line
+        if next in self.connected_node:  # update optimal launch power
+            signal.signal_power = (self.successive[next].length * self.successive[next].noise_figure * (h * 12.5e9 * self.successive[next].f) / (
+                    2 * 12.5e9 * self.successive[next].calculate_nli())) ** (1 / 3)   #12.5e9 Bn
             self.successive[next].propagate(signal)
 
 

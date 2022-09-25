@@ -1,3 +1,4 @@
+from math import floor
 from network import *
 
 network = Network("274328.json", 10)
@@ -11,13 +12,7 @@ for i in range(0, 80):
         e = floor(random.uniform(0, len(nodes)))
     cons.append(Connection(nodes[s], nodes[e], 1e-3))
 network.stream(cons)
-fig, [plot_latency, plot_snr] = plt.subplots(2)
-plot_latency.plot(list(map(lambda x: x.latency, cons)))
-plot_latency.set_title("Connection latency")
-plot_snr.plot(list(map(lambda x: x.snr, cons)))
-plot_snr.set_title("Connection GSNR")
 
-plt.show()
 
 db_a = []
 speed_fixed_a = []
@@ -29,20 +24,22 @@ for k in range(-20, 40):
     speed_fixed_a.append(network.calculate_bit_rate_actual(snr, "fixed-rate") / 1e9)
     speed_flex_a.append(network.calculate_bit_rate_actual(snr, "flex-rate") / 1e9)
     speed_shannon_a.append(network.calculate_bit_rate_actual(snr, "shannon") / 1e9)
-fig, plot_speed = plt.subplots()
-plot_speed.plot(db_a, speed_fixed_a, label="Fixed Speed")
-plot_speed.plot(db_a, speed_flex_a, label="Flex Speed")
-plot_speed.plot(db_a, speed_shannon_a, label="Shannon Speed")
-
-plot_speed.legend()
-
-plot_speed.set_xlabel("GSNR [dB]")
-plot_speed.set_ylabel("Speed [Gb/s]")
-
+#speed curves
+plt.plot(db_a, speed_fixed_a)
+plt.xlabel("GSNR [dB]")
+plt.ylabel("Fixed Speed [Gb/s]")
 plt.show()
 
-plt.hist(list(map(lambda x: x.bitRate, cons)), bins=2)
+plt.plot(db_a, speed_flex_a)
+plt.xlabel("GSNR [dB]")
+plt.ylabel("Flex Speed [Gb/s]")
 plt.show()
+
+plt.plot(db_a, speed_shannon_a)
+plt.xlabel("GSNR [dB]")
+plt.ylabel("Shannon Speed [Gb/s]")
+plt.show()
+
 
 fixedRateNet = Network("274328.json", 10, "fixed-rate")
 flexRateNet = Network("274328.json", 10, "flex-rate")
@@ -77,43 +74,38 @@ fixedRateNet.stream(fixedCons, False)
 flexRateNet.stream(flexCons, False)
 shannonNet.stream(shannonCons, False)
 
-plt.hist(list(map(lambda x: x.bitRate / 1e9, fixedCons)), bins=2)
+plt.hist(list(map(lambda x: x.bitRate / 1e9, fixedCons)), bins=10)
 plt.xlabel("bit Rate Gb/s")
-plt.ylabel("Connections")
 plt.title("Fixed-rate transceiver")
 plt.show()
 
 plt.hist(list(map(lambda x: x.bitRate / 1e9, flexCons)), bins=4)
 plt.xlabel("bit Rate Gb/s")
-plt.ylabel("Connections")
 plt.title("Flex-rate transceiver")
 plt.show()
 
 plt.hist(list(map(lambda x: x.bitRate / 1e9, shannonCons)), bins=20)
 plt.xlabel("bit Rate Gb/s")
-plt.ylabel("Connections")
 plt.title("shannon transceiver")
 plt.show()
 
-    # only maintain accepted connections
+# only maintain accepted connections
 fixedCons = [con for con in fixedCons if con.bitRate > 0]
 flexCons = [con for con in flexCons if con.bitRate > 0]
 shannonCons = [con for con in shannonCons if con.bitRate > 0]
 
-    # print average speeds
-print("Average speed for fixed transceivers is: " + str(average([con.bitRate for con in fixedCons])))
-print("Average speed for flex transceivers is: " + str(average([con.bitRate for con in flexCons])))
-print("Average speed for shannon transceivers is: " + str(average([con.bitRate for con in shannonCons])))
+# print average speeds
+print("Avg speed fixed: " + str(average([con.bitRate for con in fixedCons])))
+print("Avg speed flex: " + str(average([con.bitRate for con in flexCons])))
+print("Avg speed shannon: " + str(average([con.bitRate for con in shannonCons])))
 
-print("Average snr for fixed transceivers is: " + str(calculate_average([con.snr for con in fixedCons])))
-print("Average snr for flex transceivers is: " + str(calculate_average([con.snr for con in flexCons])))
-print("Average snr for shannon transceivers is: " + str(calculate_average([con.snr for con in shannonCons])))
+print("Avg snr fixed: " + str(average([con.snr for con in fixedCons])))
+print("Avg snr flex: " + str(average([con.snr for con in flexCons])))
+print("Avg snr shannon: " + str(average([con.snr for con in shannonCons])))
 
-print("Average latency for fixed transceivers is: " + str(calculate_average([con.latency for con in fixedCons])))
-print("Average latency for flex transceivers is: " + str(calculate_average([con.latency for con in flexCons])))
-print("Average latency for shannon transceivers is: " + str(calculate_average([con.latency for con in shannonCons])))
-
-
+print("Avg latency fixed: " + str(average([con.latency for con in fixedCons])))
+print("Avg latency flex: " + str(average([con.latency for con in flexCons])))
+print("Avg latency shannon: " + str(average([con.latency for con in shannonCons])))
 
 transceivers = ["fixed-rate", "flex-rate", "shannon"]
 
@@ -122,58 +114,40 @@ snr_histories_after_recovery = {"fixed-rate": [], "flex-rate": [], "shannon": []
 
 for transceiver in transceivers:
     allocated_capacity_history = []
-    allocated_capacity_after_recovery_history = []
+    tot_cap = 0
     for m in range(1, 80):
-         # begging the creation of the traffic matrix
+        # traffic matrix
         net = Network("274328.json", 10, transceiver)  # resetting the network
 
-        Tm = np.random.randn(len(net.nodes) ** 2) * 100e9 * m
-        Tm = np.full(len(net.nodes) ** 2, 100e9 * m)
-        Tm[Tm < 0] = 0
-        Tm = np.reshape(Tm, (len(net.nodes), len(net.nodes)))
-        np.fill_diagonal(Tm, 0.0)
-        #print(Tm)
+        traffic_m = np.random.randn(len(net.nodes) ** 2) * 100e9 * m
+        traffic_m = np.full(len(net.nodes) ** 2, 100e9 * m)
+        traffic_m[traffic_m < 0] = 0
+        traffic_m = np.reshape(traffic_m, (len(net.nodes), len(net.nodes)))
+        np.fill_diagonal(traffic_m, 0.0)  # exclude the diagonal part
 
-        net.manageTrafficMatrix(Tm)
-        #print(Tm)
+        net.manageTrafficMatrix(traffic_m)
 
         best = None
 
         for line in net.lines.values():
             if best is None:
                 best = line
-            elif (count_false(line.state) > count_false(best.state)):
+            elif count_false(line.state) > count_false(best.state):
                 best = line
 
         allocated_capacity_history.append(net.total_allocated_capacity())
         snr_histories[transceiver].append(net.average_snr())
 
-        net.strong_failure(best.label)
+        tot_cap += net.total_allocated_capacity()
 
-        print("Breaking line " + best.label)
 
-        net.traffic_recovery()
 
-        allocated_capacity_after_recovery_history.append(net.total_allocated_capacity())
-        snr_histories_after_recovery[transceiver].append(net.average_snr())
-
-    plt.plot(allocated_capacity_history, label="before recovery")
-    plt.plot(allocated_capacity_after_recovery_history, label="after recovery")
-
-    plt.legend()
-
+    plt.plot(allocated_capacity_history)
     plt.title(transceiver + " total allocated capacity")
-
     plt.show()
+    print("total allocated capacity of " + transceiver + "is: " + str(tot_cap))
+    tot_cap=0
 
-    plt.plot(snr_histories[transceiver], label="snr before recovery")
-    plt.plot(snr_histories_after_recovery[transceiver], label="snr after recovery")
-
-    plt.legend()
-
-    plt.title(transceiver + " average snr")
-    plt.xlabel("m")
-    plt.ylabel("average snr [dB]")
-
+    plt.plot(snr_histories[transceiver])
+    plt.title(transceiver + "average snr")
     plt.show()
-
