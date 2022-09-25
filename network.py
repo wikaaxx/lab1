@@ -169,7 +169,7 @@ class Network:
             else:  # if no path is found reject the connection
                 con.set_latency(None)
                 con.set_snr(0.0)
-
+        return path
     def update_route_space(self, con: Connection) -> None:  # updates the routed space to allow for the connection
         self.route_space.loc[self.path_to_string(con.path), con.channel] = False  # first here
         subPaths = []

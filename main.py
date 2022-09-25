@@ -5,7 +5,7 @@ network = Network("274328.json", 10)
 network.draw()
 nodes = list(network.nodes.keys())
 cons = []
-for i in range(0, 80):
+for i in range(1, 80):
     s = floor(random.uniform(0, len(nodes)))
     e = floor(random.uniform(0, len(nodes)))
     while e == s:
@@ -24,6 +24,7 @@ for k in range(-20, 40):
     speed_fixed_a.append(network.calculate_bit_rate_actual(snr, "fixed-rate") / 1e9)
     speed_flex_a.append(network.calculate_bit_rate_actual(snr, "flex-rate") / 1e9)
     speed_shannon_a.append(network.calculate_bit_rate_actual(snr, "shannon") / 1e9)
+
 #speed curves
 plt.plot(db_a, speed_fixed_a)
 plt.xlabel("GSNR [dB]")
